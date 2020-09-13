@@ -18,27 +18,6 @@
 
 <script>
 
-  let running = true;
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(
-    75,  // size of field of view, in degrees
-    window.innerWidth / window.innerHeight,  // aspect ratio
-    0.1,  // near clipping plane
-    100  // far clipping plane
-  );
-  const renderer = new THREE.WebGLRenderer();
-
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
-
-  const geometry = new THREE.BoxGeometry();
-  const material = new THREE.MeshBasicMaterial({color: "#6600cc"});
-  const cube = new THREE.Mesh( geometry, material );
-  scene.add(cube);
-
-  camera.position.z = 2;
-
   function animate() {
     if (running) {
       requestAnimationFrame(animate);
@@ -66,6 +45,33 @@
       animate();
     }
   }
+
+  let running = true;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(
+    75,  // size of field of view, in degrees
+    window.innerWidth / window.innerHeight,  // aspect ratio
+    0.1,  // near clipping plane
+    100  // far clipping plane
+  );
+  camera.position.z = 2;
+
+  const renderer = new THREE.WebGLRenderer();
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  const geometry = new THREE.BoxGeometry();
+  const material = new THREE.MeshBasicMaterial({color: "#6600cc"});
+  const cube = new THREE.Mesh( geometry, material );
+  scene.add(cube);
+
+  document.addEventListener("keydown", event => {
+    if (event.keyCode === 87) {
+      camera.z += .1
+    }
+  });
 
   animate();
 

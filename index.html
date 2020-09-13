@@ -8,7 +8,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r120/three.min.js"></script>
   <title>Solar Sym</title>
 </head>
-<body></body>
+<body>
+  <button type="button" onclick="rotate()">Click Here</button>
+</body>
 
 <script>
   const scene = new THREE.Scene();
@@ -34,6 +36,12 @@
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
   }
+  
+  function rotate() {
+	cube.rotation.x +=0.1;
+	cube.rotation.y +=0.2;
+  }
+  
   animate();
 </script>
 

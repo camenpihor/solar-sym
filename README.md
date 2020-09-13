@@ -1,11 +1,10 @@
 # Solar Sym
 
-Simulation of the solar system in typescript
+Simulation of the solar system in JavaScript.
 
 ## Tool(s)
 
 - Maybe threejs for the animation
-- Node?
 
 ## Goals
 

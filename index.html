@@ -26,7 +26,15 @@
   document.body.appendChild(renderer.domElement);
 
   const geometry = new THREE.BoxGeometry();
-  const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+  // const geometry = new THREE.SphereGeometry();
+  const texture = new THREE.TextureLoader().load("blue_square.png");
+  texture.encoding = THREE.sRGBEncoding;
+  texture.anisotropy = 16;
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set( 4, 4 );
+  // const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+  const material = new THREE.MeshBasicMaterial( { map: texture } );
   const cube = new THREE.Mesh( geometry, material );
   scene.add(cube);
 

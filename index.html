@@ -10,15 +10,19 @@
 </head>
 <body>
   <button type="button" onclick="rotate()">Click Here</button>
+  <button type="button" onclick="toggle_running()">Start/Stop</button>
 </body>
 
 <script>
+
+  let running = true;
+
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
-    75, // size of field of view, in degrees
-    window.innerWidth / window.innerHeight, // aspect ratio
-    0.1, // near clipping plane
-    1000 // far clipping plane
+    75,  // size of field of view, in degrees
+    window.innerWidth / window.innerHeight,  // aspect ratio
+    0.1,  // near clipping plane
+    1000  // far clipping plane
   );
   const renderer = new THREE.WebGLRenderer();
 
@@ -26,23 +30,40 @@
   document.body.appendChild(renderer.domElement);
 
   const geometry = new THREE.BoxGeometry();
-  const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+  const material = new THREE.MeshBasicMaterial({color: "#6600cc"});
   const cube = new THREE.Mesh( geometry, material );
   scene.add(cube);
 
   camera.position.z = 5;
 
   function animate() {
-    requestAnimationFrame(animate);
+    if (running) {
+      requestAnimationFrame(animate);
+    }
     renderer.render(scene, camera);
   }
   
   function rotate() {
-	cube.rotation.x +=0.1;
-	cube.rotation.y +=0.2;
+    if (!running)
+    {
+      return;
+    }
+    cube.rotation.x += 0.1;
+    cube.rotation.y += 0.2;
   }
-  
+
+  function toggle_running() {
+    if (running) {
+      running = false;
+    }
+    else {
+      running = true;
+      animate();
+    }
+  }
+
   animate();
+
 </script>
 
 </html>

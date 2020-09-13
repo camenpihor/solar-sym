@@ -1,0 +1,11 @@
+# typescript
+dist
+node_modules
+
+# project
+.env
+
+# jest
+coverage
+
+# eslint

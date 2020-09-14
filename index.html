@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,31 +10,38 @@
 
   <title>Solar Sym</title>
 </head>
+
 <body>
   <button type="button" onclick="cam_rotate('x')">x-Rotate Camera</button>
   <button type="button" onclick="cam_rotate('y')">y-Rotate Camera</button>
   <button type="button" onclick="cam_rotate('z')">z-Rotate Camera</button>
   <button type="button" onclick="cam_reset()">Reset Camera</button>
   <button type="button" onclick="toggle_running()">Start/Stop</button>
+  <button type="button" onclick="animate_step()">Do The Thing</button>
 </body>
 
 <script type="module">
 
   import { OrbitControls } from './controls/OrbitControls.js';
 
+  function animate_step() {
+    update_positions(celestial_bodies);
+    renderer.render(scene, camera);
+  }
+
   function animate() {
     if (running) {
       requestAnimationFrame(animate);
     }
-    renderer.render(scene, camera);
+    animate_step();
   }
-  
+
   function cam_rotate(axis) {
-    if (!running) {return;}
+    if (!running) { return; }
     camera.rotation[axis] += .1;
   }
   function cam_reset(axis) {
-    if (!running) {return;}
+    if (!running) { return; }
     camera.rotation.x = 0;
     camera.rotation.y = 0;
     camera.rotation.z = 0;
@@ -49,7 +57,7 @@
     }
   }
 
-  let running = true;
+  let running = false;
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
@@ -65,27 +73,103 @@
   renderer.setSize(window.innerWidth-20, window.innerHeight-100);
   document.body.appendChild(renderer.domElement);
 
+
   let controls = new OrbitControls( camera, renderer.domElement );
   controls.enablePan = false;
 
-  const geometry = new THREE.SphereGeometry(1, 100, 100);
+  class Body {
+    constructor(radius, color, position, velocity, mass) {
+      this.position = position;
+      this.velocity = velocity;
+      this.mass = mass;
 
-  const texture = new THREE.TextureLoader();
 
-  const material = new THREE.MeshBasicMaterial({
-    map: texture.load('https://mikero.se/straitjacket/images/escape1.jpg'),
-  });
-  
-  const cube = new THREE.Mesh( geometry, material );
-  
-  scene.add(cube);
-
-  document.addEventListener("keydown", event => {
-    if (event.keyCode === 87) {
-      camera.z += .1
-      controls.update()
+      const texture = new THREE.TextureLoader();
+      const material = new THREE.MeshBasicMaterial({
+        map: texture.load('straitjacket/images/escape1.jpg'),
+      });
+      // const material = new THREE.MeshBasicMaterial({ color: color });
+      const geometry = new THREE.SphereGeometry(radius, 100, 100);
+      this.mesh = new THREE.Mesh(geometry, material);
+      this.update_mesh_position();
     }
+
+    update_mesh_position() {
+      this.mesh.position.x = this.position[0];
+      this.mesh.position.y = this.position[1];
+      this.mesh.position.z = this.position[2];
+    }
+  }
+
+  const sun = new Body(10, "yellow", [0, 0, 0], [0, 0, 0], 1000);
+  const earth = new Body(1, "#6600cc", [40, 0, 0], [0, 5, 0], 10);
+
+  const celestial_bodies = [sun, earth];
+
+  celestial_bodies.forEach(body => {
+    scene.add(body.mesh);
   });
+
+  function distance_squared(body1, body2) {
+    return (
+      Math.pow(body1.position[0] - body2.position[0], 2) +
+      Math.pow(body1.position[1] - body2.position[1], 2) +
+      Math.pow(body1.position[2] - body2.position[2], 2)
+    );
+  }
+
+  function unitize(vector) {
+    const magnitude = Math.sqrt(
+      Math.pow(vector[0], 2) + Math.pow(vector[1], 2) + Math.pow(vector[2], 2)
+    );
+
+    return [
+      vector[0] / magnitude,
+      vector[1] / magnitude,
+      vector[2] / magnitude,
+    ];
+  }
+
+  function unit_vector_between(body1, body2) {
+    const vector_between = [
+      body2.position[0] - body1.position[0],
+      body2.position[1] - body1.position[1],
+      body2.position[2] - body1.position[2],
+    ];
+
+    return unitize(vector_between);
+  }
+
+  function update_positions(bodies) {
+    // Compute updates to velocities.
+    bodies.forEach(body => {
+      const velocity_update = [0, 0, 0];
+
+      bodies.forEach(other_body => {
+        // m2/r^2 (the m1s)
+        if (other_body.position === body.position) {return;}  // Skip self.
+        const scale = other_body.mass / distance_squared(body, other_body);
+        let update_from_other = unit_vector_between(body, other_body);
+        update_from_other = update_from_other.map((e) => scale * e);
+        velocity_update[0] += update_from_other[0];
+        velocity_update[1] += update_from_other[1];
+        velocity_update[2] += update_from_other[2];
+      });
+      body.velocity[0] += velocity_update[0];
+      body.velocity[1] += velocity_update[1];
+      body.velocity[2] += velocity_update[2];
+    });
+
+    // Apply updates to positions.
+    bodies.forEach(body => {
+      body.position[0] += body.velocity[0];
+      body.position[1] += body.velocity[1];
+      body.position[2] += body.velocity[2];
+
+      body.update_mesh_position();
+    });
+
+  }
 
   animate();
 

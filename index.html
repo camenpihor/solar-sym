@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,29 +9,36 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r120/three.min.js"></script>
   <title>Solar Sym</title>
 </head>
+
 <body>
   <button type="button" onclick="cam_rotate('x')">x-Rotate Camera</button>
   <button type="button" onclick="cam_rotate('y')">y-Rotate Camera</button>
   <button type="button" onclick="cam_rotate('z')">z-Rotate Camera</button>
   <button type="button" onclick="cam_reset()">Reset Camera</button>
   <button type="button" onclick="toggle_running()">Start/Stop</button>
+  <button type="button" onclick="animate_step()">Do The Thing</button>
 </body>
 
 <script>
+
+  function animate_step() {
+    update_positions(celestial_bodies);
+    renderer.render(scene, camera);
+  }
 
   function animate() {
     if (running) {
       requestAnimationFrame(animate);
     }
-    renderer.render(scene, camera);
+    animate_step();
   }
-  
+
   function cam_rotate(axis) {
-    if (!running) {return;}
+    if (!running) { return; }
     camera.rotation[axis] += .1;
   }
   function cam_reset(axis) {
-    if (!running) {return;}
+    if (!running) { return; }
     camera.rotation.x = 0;
     camera.rotation.y = 0;
     camera.rotation.z = 0;
@@ -46,7 +54,7 @@
     }
   }
 
-  let running = true;
+  let running = false;
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(
@@ -68,10 +76,13 @@
       this.velocity = velocity;
       this.mass = mass;
 
-      const material = new THREE.MeshBasicMaterial({color: color});
+      const material = new THREE.MeshBasicMaterial({ color: color });
       const geometry = new THREE.SphereGeometry(radius, 100, 100);
       this.mesh = new THREE.Mesh(geometry, material);
+      this.update_mesh_position();
+    }
 
+    update_mesh_position() {
       this.mesh.position.x = this.position[0];
       this.mesh.position.y = this.position[1];
       this.mesh.position.z = this.position[2];
@@ -79,7 +90,7 @@
   }
 
   const sun = new Body(10, "yellow", [0, 0, 0], [0, 0, 0], 1000);
-  const earth = new Body(1, "#6600cc", [40, 0, 0], [0, 0, 0], 10);
+  const earth = new Body(1, "#6600cc", [40, 0, 0], [1, 1, 1], 10);
 
   const celestial_bodies = [sun, earth];
 
@@ -117,28 +128,34 @@
     return unitize(vector_between);
   }
 
-  // Compute updates.
-  const velocity_updates = [];
-  celestial_bodies.forEach(body => {
-    const velocity_update = [0, 0, 0];
+  function update_positions(bodies) {
+    // Compute updates.
+    const velocity_updates = [];
+    bodies.forEach(body => {
+      const velocity_update = [0, 0, 0];
 
-    celestial_bodies.forEach(other_body => {
-      // m2/r^2 (the m1s)
-      const scale = other_body.mass / distance_squared(body, other_body);
-      let velocity_update = unit_vector_between(body, other_body);
-      velocity_update = velocity_update.map((e) => scale * e);
+      bodies.forEach(other_body => {
+        // m2/r^2 (the m1s)
+        const scale = other_body.mass / distance_squared(body, other_body);
+        let velocity_update = unit_vector_between(body, other_body);
+        velocity_update = velocity_update.map((e) => scale * e);
 
-      velocity_updates.push(velocity_update);
+        velocity_updates.push(velocity_update);
+      })
     })
-  })
 
-  // Apply updates.
-  celestial_bodies.forEach(body => {
-    body.position.x += body.velocity[0];
-    body.position.y += body.velocity[1];
-    body.position.z += body.velocity[2];
-  })
-  // TODO update velocities here.
+    // Apply updates.
+    bodies.forEach(body => {
+      body.position[0] += body.velocity[0];
+      body.position[1] += body.velocity[1];
+      body.position[2] += body.velocity[2];
+
+      body.update_mesh_position();
+    })
+
+
+    // TODO update velocities here.
+  }
 
   document.addEventListener("keydown", event => {
     if (event.keyCode === 87) {

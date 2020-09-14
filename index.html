@@ -25,20 +25,45 @@
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  const geometry = new THREE.BoxGeometry();
-  // const geometry = new THREE.SphereGeometry();
-  // https://discoverthreejs.com/book/first-steps/textures-intro/
-  // https://threejs.org/docs/#api/en/materials/MeshBasicMaterial
-  const texture = new THREE.TextureLoader().load("blue_square.png");
+  // const geometry = new THREE.BoxGeometry();
+  // // const geometry = new THREE.SphereGeometry();
+  // // https://discoverthreejs.com/book/first-steps/textures-intro/
+  // // https://threejs.org/docs/#api/en/materials/MeshBasicMaterial
+  // const texture = new THREE.TextureLoader().load("blue_square.png");
+  // texture.encoding = THREE.sRGBEncoding;
+  // texture.anisotropy = 16;
+  // texture.wrapS = THREE.RepeatWrapping;
+  // texture.wrapT = THREE.RepeatWrapping;
+  // texture.repeat.set( 4, 4 );
+  // // const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+  // const material = new THREE.MeshBasicMaterial( { map: texture } );
+  // const cube = new THREE.Mesh( geometry, material );
+  // scene.add(cube);
+  const geometry = new THREE.BoxBufferGeometry( 2, 2, 2 );
+
+  // create a texture loader.
+  const textureLoader = new THREE.TextureLoader();
+  textureLoader.setCrossOrigin('anonymous');
+
+  // Load a texture. See the note in chapter 4 on working locally, or the page
+  // https://threejs.org/docs/#manual/introduction/How-to-run-things-locally
+  // if you run into problems here
+  const texture = textureLoader.load( 'textures/uv_test_bw.png' );
+
+  // set the "color space" of the texture
   texture.encoding = THREE.sRGBEncoding;
+
+  // reduce blurring at glancing angles
   texture.anisotropy = 16;
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set( 4, 4 );
-  // const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-  const material = new THREE.MeshBasicMaterial( { map: texture } );
-  const cube = new THREE.Mesh( geometry, material );
-  scene.add(cube);
+
+  // create a Standard material using the texture we just loaded as a color map
+  const material = new THREE.MeshStandardMaterial( {
+    map: texture,
+  } );
+
+  // create a Mesh containing the geometry and material
+  mesh = new THREE.Mesh( geometry, material );
+  scene.add(mesh);
 
   camera.position.z = 5;
 

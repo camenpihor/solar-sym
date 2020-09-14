@@ -62,30 +62,83 @@
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-class Body {
-  constructor(radius, color, position, velocity, mass) {
-    this.position = position;
-    this.velocity = velocity;
-    this.mass = mass;
+  class Body {
+    constructor(radius, color, position, velocity, mass) {
+      this.position = position;
+      this.velocity = velocity;
+      this.mass = mass;
 
-    const material = new THREE.MeshBasicMaterial({color: color});
-    const geometry = new THREE.SphereGeometry(radius, 100, 100);
-    this.mesh = new THREE.Mesh(geometry, material);
+      const material = new THREE.MeshBasicMaterial({color: color});
+      const geometry = new THREE.SphereGeometry(radius, 100, 100);
+      this.mesh = new THREE.Mesh(geometry, material);
 
-    this.mesh.position.x = this.position[0];
-    this.mesh.position.y = this.position[1];
-    this.mesh.position.z = this.position[2];
+      this.mesh.position.x = this.position[0];
+      this.mesh.position.y = this.position[1];
+      this.mesh.position.z = this.position[2];
+    }
   }
-}
 
-const sun = new Body(10, "yellow", [0, 0, 0], 0, 1000);
-const earth = new Body(1, "#6600cc", [40, 0, 0], 0, 10);
+  const sun = new Body(10, "yellow", [0, 0, 0], [0, 0, 0], 1000);
+  const earth = new Body(1, "#6600cc", [40, 0, 0], [0, 0, 0], 10);
 
-const celestial_bodies = [sun, earth];
+  const celestial_bodies = [sun, earth];
 
-celestial_bodies.forEach(body => {
-  scene.add(body.mesh);
-});
+  celestial_bodies.forEach(body => {
+    scene.add(body.mesh);
+  });
+
+  function distance_squared(body1, body2) {
+    return (
+      Math.pow(body1.position[0] - body2.position[0], 2) +
+      Math.pow(body1.position[1] - body2.position[1], 2) +
+      Math.pow(body1.position[2] - body2.position[2], 2)
+    );
+  }
+
+  function unitize(vector) {
+    const magnitude = Math.sqrt(
+      Math.pow(vector[0], 2) + Math.pow(vector[1], 2) + Math.pow(vector[2], 2)
+    );
+
+    return [
+      vector[0] / magnitude,
+      vector[1] / magnitude,
+      vector[2] / magnitude,
+    ];
+  }
+
+  function unit_vector_between(body1, body2) {
+    const vector_between = [
+      body2[0] - body1[0],
+      body2[1] - body1[1],
+      body2[2] - body1[2],
+    ];
+
+    return unitize(vector_between);
+  }
+
+  // Compute updates.
+  const velocity_updates = [];
+  celestial_bodies.forEach(body => {
+    const velocity_update = [0, 0, 0];
+
+    celestial_bodies.forEach(other_body => {
+      // m2/r^2 (the m1s)
+      const scale = other_body.mass / distance_squared(body, other_body);
+      let velocity_update = unit_vector_between(body, other_body);
+      velocity_update = velocity_update.map((e) => scale * e);
+
+      velocity_updates.push(velocity_update);
+    })
+  })
+
+  // Apply updates.
+  celestial_bodies.forEach(body => {
+    body.position.x += body.velocity[0];
+    body.position.y += body.velocity[1];
+    body.position.z += body.velocity[2];
+  })
+  // TODO update velocities here.
 
   document.addEventListener("keydown", event => {
     if (event.keyCode === 87) {

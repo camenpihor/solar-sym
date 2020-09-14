@@ -16,7 +16,9 @@
   <button type="button" onclick="toggle_running()">Start/Stop</button>
 </body>
 
-<script>
+<script type="module">
+
+  import { OrbitControls } from './controls/OrbitControls.js';
 
   function animate() {
     if (running) {
@@ -90,6 +92,13 @@ celestial_bodies.forEach(body => {
   document.addEventListener("keydown", event => {
     if (event.keyCode === 87) {
       camera.position.z += .1
+  let controls = new THREE.OrbitControls( camera, renderer.domElement );
+  controls.enablePan = false;
+
+  document.addEventListener("keydown", event => {
+    if (event.keyCode === 87) {
+      camera.position.z += .1
+      controls.update()
     }
   });
 

@@ -53,19 +53,39 @@
     75,  // size of field of view, in degrees
     window.innerWidth / window.innerHeight,  // aspect ratio
     0.1,  // near clipping plane
-    100  // far clipping plane
+    1000  // far clipping plane
   );
-  camera.position.z = 2;
+  camera.position.z = 100;
 
   const renderer = new THREE.WebGLRenderer();
 
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
-  const geometry = new THREE.BoxGeometry();
-  const material = new THREE.MeshBasicMaterial({color: "#6600cc"});
-  const cube = new THREE.Mesh( geometry, material );
-  scene.add(cube);
+class Body {
+  constructor(radius, color, position, velocity, mass) {
+    this.position = position;
+    this.velocity = velocity;
+    this.mass = mass;
+
+    const material = new THREE.MeshBasicMaterial({color: color});
+    const geometry = new THREE.SphereGeometry(radius, 100, 100);
+    this.mesh = new THREE.Mesh(geometry, material);
+
+    this.mesh.position.x = this.position[0];
+    this.mesh.position.y = this.position[1];
+    this.mesh.position.z = this.position[2];
+  }
+}
+
+const sun = new Body(10, "yellow", [0, 0, 0], 0, 1000);
+const earth = new Body(1, "#6600cc", [40, 0, 0], 0, 10);
+
+const celestial_bodies = [sun, earth];
+
+celestial_bodies.forEach(body => {
+  scene.add(body.mesh);
+});
 
   document.addEventListener("keydown", event => {
     if (event.keyCode === 87) {

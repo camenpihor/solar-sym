@@ -20,10 +20,7 @@
   <button type="button" onclick="animate_step()">Do The Thing</button>
 </body>
 
-<script type="module">
-
-  import { OrbitControls } from './controls/OrbitControls.js';
-
+<script>
   function animate_step() {
     update_positions(celestial_bodies);
     renderer.render(scene, camera);
@@ -74,7 +71,7 @@
   document.body.appendChild(renderer.domElement);
 
 
-  let controls = new OrbitControls( camera, renderer.domElement );
+  let controls = new THREE.OrbitControls( camera, renderer.domElement );
   controls.enablePan = false;
 
   class Body {

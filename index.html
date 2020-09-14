@@ -16,7 +16,9 @@
   <button type="button" onclick="toggle_running()">Start/Stop</button>
 </body>
 
-<script>
+<script type="module">
+
+  import { OrbitControls } from './controls/OrbitControls.js';
 
   function animate() {
     if (running) {
@@ -62,6 +64,9 @@
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
+  let controls = new THREE.OrbitControls( camera, renderer.domElement );
+  controls.enablePan = false;
+
   const geometry = new THREE.BoxGeometry();
   const material = new THREE.MeshBasicMaterial({color: "#6600cc"});
   const cube = new THREE.Mesh( geometry, material );
@@ -70,6 +75,7 @@
   document.addEventListener("keydown", event => {
     if (event.keyCode === 87) {
       camera.z += .1
+      controls.update()
     }
   });
 

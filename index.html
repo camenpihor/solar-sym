@@ -90,7 +90,7 @@
   }
 
   const sun = new Body(10, "yellow", [0, 0, 0], [0, 0, 0], 1000);
-  const earth = new Body(1, "#6600cc", [40, 0, 0], [1, 1, 1], 10);
+  const earth = new Body(1, "#6600cc", [40, 0, 0], [0, 5, 0], 10);
 
   const celestial_bodies = [sun, earth];
 
@@ -120,41 +120,43 @@
 
   function unit_vector_between(body1, body2) {
     const vector_between = [
-      body2[0] - body1[0],
-      body2[1] - body1[1],
-      body2[2] - body1[2],
+      body2.position[0] - body1.position[0],
+      body2.position[1] - body1.position[1],
+      body2.position[2] - body1.position[2],
     ];
 
     return unitize(vector_between);
   }
 
   function update_positions(bodies) {
-    // Compute updates.
-    const velocity_updates = [];
+    // Compute updates to velocities.
     bodies.forEach(body => {
       const velocity_update = [0, 0, 0];
 
       bodies.forEach(other_body => {
         // m2/r^2 (the m1s)
+        if (other_body.position === body.position) {return;}  // Skip self.
         const scale = other_body.mass / distance_squared(body, other_body);
-        let velocity_update = unit_vector_between(body, other_body);
-        velocity_update = velocity_update.map((e) => scale * e);
+        let update_from_other = unit_vector_between(body, other_body);
+        update_from_other = update_from_other.map((e) => scale * e);
+        velocity_update[0] += update_from_other[0];
+        velocity_update[1] += update_from_other[1];
+        velocity_update[2] += update_from_other[2];
+      });
+      body.velocity[0] += velocity_update[0];
+      body.velocity[1] += velocity_update[1];
+      body.velocity[2] += velocity_update[2];
+    });
 
-        velocity_updates.push(velocity_update);
-      })
-    })
-
-    // Apply updates.
+    // Apply updates to positions.
     bodies.forEach(body => {
       body.position[0] += body.velocity[0];
       body.position[1] += body.velocity[1];
       body.position[2] += body.velocity[2];
 
       body.update_mesh_position();
-    })
+    });
 
-
-    // TODO update velocities here.
   }
 
   document.addEventListener("keydown", event => {
